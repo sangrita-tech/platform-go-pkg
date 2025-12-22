@@ -9,7 +9,7 @@ import (
 	"github.com/alexliesenfeld/health"
 )
 
-type HealthCheck struct {
+type Healthcheck struct {
 	cfg Config
 
 	mux *http.ServeMux
@@ -20,12 +20,12 @@ type HealthCheck struct {
 	handlers map[string]http.Handler
 }
 
-func New(cfg Config) (*HealthCheck, error) {
+func New(cfg Config) (*Healthcheck, error) {
 	if cfg.Addr == "" {
 		return nil, errors.New("healthcheck: addr is empty")
 	}
 
-	h := &HealthCheck{
+	h := &Healthcheck{
 		cfg:      cfg,
 		mux:      http.NewServeMux(),
 		probes:   make(map[string]*Probe),
@@ -40,7 +40,7 @@ func New(cfg Config) (*HealthCheck, error) {
 	return h, nil
 }
 
-func (h *HealthCheck) Register(p *Probe) error {
+func (h *Healthcheck) Register(p *Probe) error {
 	if p == nil {
 		return errors.New("healthcheck: probe is nil")
 	}
@@ -83,7 +83,7 @@ func (h *HealthCheck) Register(p *Probe) error {
 	return nil
 }
 
-func (h *HealthCheck) Run() error {
+func (h *Healthcheck) Run() error {
 	err := h.srv.ListenAndServe()
 	if err == http.ErrServerClosed {
 		return nil
@@ -91,6 +91,6 @@ func (h *HealthCheck) Run() error {
 	return err
 }
 
-func (h *HealthCheck) Shutdown(ctx context.Context) error {
+func (h *Healthcheck) Shutdown(ctx context.Context) error {
 	return h.srv.Shutdown(ctx)
 }
