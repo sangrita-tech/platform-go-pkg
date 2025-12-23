@@ -5,12 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sangrita-tech/golang-pkg/pkg/version"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-func New(cfg Config, buildInfo version.BuildInfo) (*zap.Logger, error) {
+func New(cfg Config) (*zap.Logger, error) {
 	level, err := parseLevel(cfg.Level)
 	if err != nil {
 		return nil, err
@@ -32,11 +31,11 @@ func New(cfg Config, buildInfo version.BuildInfo) (*zap.Logger, error) {
 		return nil, err
 	}
 
-	l = l.WithOptions(zap.AddCaller()).With(buildFields(cfg, buildInfo)...)
+	l = l.WithOptions(zap.AddCaller()).With(buildFields(cfg)...)
 	return l, nil
 }
 
-func NewInMemory(cfg Config, buildInfo version.BuildInfo) (*zap.Logger, *Capture, error) {
+func NewInMemory(cfg Config) (*zap.Logger, *Capture, error) {
 	level, err := parseLevel(cfg.Level)
 	if err != nil {
 		return nil, nil, err
@@ -48,7 +47,7 @@ func NewInMemory(cfg Config, buildInfo version.BuildInfo) (*zap.Logger, *Capture
 	encoder := zapcore.NewJSONEncoder(encCfg)
 	core := zapcore.NewCore(encoder, zapcore.AddSync(cap), level)
 
-	l := zap.New(core).WithOptions(zap.AddCaller()).With(buildFields(cfg, buildInfo)...)
+	l := zap.New(core).WithOptions(zap.AddCaller()).With(buildFields(cfg)...)
 	return l, cap, nil
 }
 
@@ -68,27 +67,11 @@ func encoderConfigUTC() zapcore.EncoderConfig {
 	}
 }
 
-func buildFields(cfg Config, bi version.BuildInfo) []zap.Field {
-	fields := []zap.Field{
-		zap.String("app_version", bi.Version),
-	}
-
-	if bi.Commit != nil {
-		fields = append(fields, zap.String("app_commit", *bi.Commit))
-	} else {
-		fields = append(fields, zap.Any("app_commit", nil))
-	}
-
-	if bi.Date != nil {
-		fields = append(fields, zap.Time("app_date", *bi.Date))
-	} else {
-		fields = append(fields, zap.Any("app_date", nil))
-	}
-
+func buildFields(cfg Config) []zap.Field {
+	fields := []zap.Field{}
 	for k, v := range cfg.BaseFields {
 		fields = append(fields, zap.String(k, v))
 	}
-
 	return fields
 }
 
