@@ -1,5 +1,9 @@
 name: CI
 
+env:
+  GO_VERSION: "1.25"
+  PLATFORM_CI_REF: "v1.3.0"
+
 on:
   push:
     branches:
@@ -10,26 +14,29 @@ on:
 
 jobs:
   lint:
-    uses: sangrita-tech/platform-ci/.github/workflows/lint.yml@v1.2.0
+    uses: sangrita-tech/platform-ci/.github/workflows/lint.yml@${{ env.PLATFORM_CI_REF }}
     permissions:
       contents: read
+    secrets: inherit
+    with:
+      go_version: ${{ env.GO_VERSION }}
 
   test:
-    needs: lint
-    uses: sangrita-tech/platform-ci/.github/workflows/test.yml@v1.2.0
+    uses: sangrita-tech/platform-ci/.github/workflows/test.yml@${{ env.PLATFORM_CI_REF }}
     permissions:
       contents: read
+    secrets: inherit
+    with:
+      go_version: ${{ env.GO_VERSION }}
 
   vuln-scan:
-    needs: [lint, test]
-    uses: sangrita-tech/platform-ci/.github/workflows/scan-vulnerabilities.yml@v1.2.0
+    uses: sangrita-tech/platform-ci/.github/workflows/scan-vulns.yml@${{ env.PLATFORM_CI_REF }}
     permissions:
       contents: read
       security-events: write
 
   secrets-scan:
-    needs: [lint, test]
-    uses: sangrita-tech/platform-ci/.github/workflows/scan-secrets.yml@v1.2.0
+    uses: sangrita-tech/platform-ci/.github/workflows/scan-secrets.yml@${{ env.PLATFORM_CI_REF }}
     permissions:
       contents: read
       security-events: write
