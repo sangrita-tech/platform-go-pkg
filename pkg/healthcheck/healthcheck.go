@@ -54,19 +54,19 @@ func (h *Healthcheck) Register(p *Probe) error {
 	}
 	route := p.Route()
 	if route == "" || route[0] != '/' {
-		return fmt.Errorf("healthcheck -> probe route %q must start with '/'", route)
+		return fmt.Errorf("healthcheck -> probe route must start with '/' -> %q", route)
 	}
 
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
 	if _, exists := h.probes[p.Name()]; exists {
-		return fmt.Errorf("healthcheck -> probe with same name already registered: %s", p.Name())
+		return fmt.Errorf("healthcheck -> probe with same name already registered -> %s", p.Name())
 	}
 	h.probes[p.Name()] = p
 
 	if _, exists := h.handlers[route]; exists {
-		return fmt.Errorf("healthcheck -> route already registered: %s", route)
+		return fmt.Errorf("healthcheck -> route already registered -> %s", route)
 	}
 
 	checker := health.NewChecker(

@@ -10,7 +10,7 @@ type Config struct {
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env:"SHUTDOWN_TIMEOUT" env-default:"5s"`
 }
 
-func (c Config) validate() error {
+func (c *Config) validate() error {
 	if c.Addr == "" {
 		return errors.New("addr must not be empty")
 	}
