@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,12 +12,16 @@ import (
 	klog "k8s.io/klog/v2"
 )
 
-func New(cfg Config) (*zap.Logger, func(), error) {
-	level, err := parseLevel(cfg.Level)
-	if err != nil {
-		return nil, nil, err
+func New(cfg *Config) (*zap.Logger, func(), error) {
+	if cfg == nil {
+		return nil, nil, errors.New("logger -> config is nil")
 	}
 
+	if err := cfg.validate(); err != nil {
+		return nil, nil, fmt.Errorf("logger -> failed to validate config -> %w", err)
+	}
+
+	level := parseLevel(cfg.Level)
 	encCfg := encoderConfigUTC()
 
 	zcfg := zap.Config{
@@ -30,7 +35,7 @@ func New(cfg Config) (*zap.Logger, func(), error) {
 
 	l, err := zcfg.Build()
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("logger -> failed to build zap logger -> %w", err)
 	}
 
 	l = l.WithOptions(zap.AddCaller()).With(buildFields(cfg)...)
@@ -48,12 +53,8 @@ func New(cfg Config) (*zap.Logger, func(), error) {
 	return l, cleanup, nil
 }
 
-func NewInMemory(cfg Config) (*zap.Logger, *Capture, error) {
-	level, err := parseLevel(cfg.Level)
-	if err != nil {
-		return nil, nil, err
-	}
-
+func NewInMemory(cfg *Config) (*zap.Logger, *Capture, error) {
+	level := parseLevel(cfg.Level)
 	encCfg := encoderConfigUTC()
 
 	cap := &Capture{}
@@ -80,7 +81,7 @@ func encoderConfigUTC() zapcore.EncoderConfig {
 	}
 }
 
-func buildFields(cfg Config) []zap.Field {
+func buildFields(cfg *Config) []zap.Field {
 	fields := []zap.Field{}
 	for k, v := range cfg.BaseFields {
 		fields = append(fields, zap.String(k, v))
@@ -88,17 +89,15 @@ func buildFields(cfg Config) []zap.Field {
 	return fields
 }
 
-func parseLevel(level string) (zapcore.Level, error) {
+func parseLevel(level string) zapcore.Level {
 	switch strings.ToLower(level) {
 	case "debug":
-		return zapcore.DebugLevel, nil
-	case "info":
-		return zapcore.InfoLevel, nil
+		return zapcore.DebugLevel
 	case "warn", "warning":
-		return zapcore.WarnLevel, nil
+		return zapcore.WarnLevel
 	case "error":
-		return zapcore.ErrorLevel, nil
+		return zapcore.ErrorLevel
 	default:
-		return zapcore.InfoLevel, fmt.Errorf("logger: unknown level %q", level)
+		return zapcore.InfoLevel
 	}
 }
