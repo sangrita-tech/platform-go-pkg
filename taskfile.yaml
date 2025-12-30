@@ -1,0 +1,15 @@
+version: "3"
+
+tasks:
+  test:
+    desc: Run all tests with coverage and show total percentage
+    cmds:
+      - go test ./... -cover
+    silent: false
+
+  tag:*:
+    desc: "Create annotated git tag. Usage: task tag:1.2.3 (or tag:v1.2.3)."
+    cmds:
+      - |
+        git tag "{{index .MATCH 0}}"
+        git push --tags
