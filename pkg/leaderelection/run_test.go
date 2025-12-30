@@ -49,7 +49,7 @@ func Test_Run_TwoElectors_LeadershipTransfers(t *testing.T) {
 		}
 	}
 
-	cfg1 := leaderelection.Config{
+	cfg1 := &leaderelection.Config{
 		LeaseName:      leaseName,
 		LeaseNamespace: leaseNS,
 		Identity:       "id-1",
@@ -57,7 +57,7 @@ func Test_Run_TwoElectors_LeadershipTransfers(t *testing.T) {
 		RenewDeadline:  3 * time.Second,
 		RetryPeriod:    1 * time.Second,
 	}
-	cfg2 := leaderelection.Config{
+	cfg2 := &leaderelection.Config{
 		LeaseName:      leaseName,
 		LeaseNamespace: leaseNS,
 		Identity:       "id-2",

@@ -14,7 +14,7 @@ import (
 func Test_New_ValidatesClientsetAndContextCanceled(t *testing.T) {
 	t.Parallel()
 
-	cfg := leaderelection.Config{
+	cfg := &leaderelection.Config{
 		LeaseDuration: 60 * time.Second,
 		RenewDeadline: 20 * time.Second,
 		RetryPeriod:   5 * time.Second,
@@ -34,7 +34,7 @@ func Test_New_ValidatesClientsetAndContextCanceled(t *testing.T) {
 	clientset, err := kubernetes.NewForConfig(restCfg)
 	require.NoError(t, err)
 
-	cfg2 := leaderelection.Config{
+	cfg2 := &leaderelection.Config{
 		LeaseName:      "lease",
 		LeaseNamespace: "default",
 		Identity:       "x",
